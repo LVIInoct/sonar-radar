@@ -1,4 +1,4 @@
 #!/bin/bash
-gcc sonarradar.c -o sonarradar -lm
-sudo cp sonarradar /usr/local/bin/sonarradar
-echo "(Fictional) sonar radar installed! Run sonarradar anywhere in your terminal to run it."
+gcc sonar-radar.c -o sonar-radar -lm
+sudo cp sonar-radar /usr/local/bin/sonar-radar
+echo "(Fictional) sonar radar installed! Run sonar-radar anywhere in your terminal to run it."
