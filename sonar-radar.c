@@ -20,7 +20,7 @@ typedef struct{
 
 // prototypes
 void checkPing(double *lastSpawn, int *pingCount, Ping *ping);
-void expandPing(Ping *ping, int *pingCount, int maxRadius);
+void expandPing(Ping *ping, int *pingCount, float maxRadius);
 void crosshair(int centerY, int centerX, struct winsize w);
 void drawPing(int centerX, int centerY, int pingCount, Ping *ping, struct winsize w);
 void checkBlip(struct winsize w, Blip *blips, double *currentTime);
@@ -48,6 +48,7 @@ int main() {
 
     char radar_char = 'O'; // character to represent middle of radar
     memset(blips, 0, sizeof(blips)); // this resets every data to 0 to avoid garbage
+    srand(time(NULL)); // setting rand to null so it starts differently every time
 
     while (1) {
         printf("\033[H\033[J"); // clear once
@@ -92,7 +93,7 @@ void checkPing(double *lastSpawn, int *pingCount, Ping *ping){
     }
 }
 
-void expandPing(Ping *ping, int *pingCount, int maxRadius){
+void expandPing(Ping *ping, int *pingCount, float maxRadius){
 
         // expand older circle
     for (int i = 0; i < *pingCount; i++) {
@@ -163,7 +164,7 @@ void drawPing(int centerX, int centerY, int pingCount, Ping *ping, struct winsiz
 }
 
 void checkBlip(struct winsize w, Blip *blips, double *currentTime) {
-    char *names[] = {"[SUB]", "[SHIP]", "[MINE]", "[UNK]", "[TGT]", "[JESUS???]", "[BOMB]", "[O_o]"};
+    char *names[] = {"[SUB]", "[SHIP]", "[MINE]", "[UNK]", "[TGT]", "[JESUS?]", "[BOMB]", "[O_o]"};
     for (int i = 0; i < MAX_BLIPS; i++){ // while it hasnt gone thru all elements of the array
         if (blips[i].active == 0 && blips[i].spawnTime == 0){ // if blip wasnt active before
             blips[i].spawnTime = *currentTime + (rand() % 11 + 5); // giving it a random cooldown between 5 and 15
@@ -174,7 +175,7 @@ void checkBlip(struct winsize w, Blip *blips, double *currentTime) {
             blips[i].y = rand() % (w.ws_row - 4) + 5;
             blips[i].pinged = 0; // makes pinged true
             blips[i].spawnedAt = *currentTime; // starts the 15 second countdown before it disappears
-            strncpy(blips[i].name, names[rand() % 8], 9);
+            strncpy(blips[i].name, names[rand() % 7], 8);
         }
         if (blips[i].active == 1 && (*currentTime - blips[i].spawnedAt) > 15.0) { // after 15 seconds theyll be gone
             blips[i].active = 0;
@@ -190,30 +191,32 @@ void checkBlip(struct winsize w, Blip *blips, double *currentTime) {
 
 void drawBlip(int centerX, int centerY, int pingCount, Ping *ping, struct winsize w, Blip *blips, double *currentTime){
     for (int i = 0; i < MAX_BLIPS; i++){
-        int dx = blips[i].x - centerX; // calculates dx (i think it's the diagonal x wait no that doesnt make sense maybe a second temp x)
-        int dy = (blips[i].y - centerY) * 2;
-        float blipdistance = sqrt(pow(dx, 2) + pow(dy, 2)); 
-        for (int j = 0; j < pingCount; j++){ // not MAX_PINGS because it doesnt take all pings at once, only current ones
-            if (fabs(blipdistance - ping[j].radius) < 1.0){ // checks if distance between them is less than 1, also fabs doesn't allow negative numbers
-                blips[i].pinged = *currentTime;
+        if (blips[i].active == 1){
+            int dx = blips[i].x - centerX; // calculates dx (i think it's the diagonal x wait no that doesnt make sense maybe a second temp x)
+            int dy = (blips[i].y - centerY) * 2;
+            float blipdistance = sqrt(pow(dx, 2) + pow(dy, 2)); 
+            for (int j = 0; j < pingCount; j++){ // not MAX_PINGS because it doesnt take all pings at once, only current ones
+                if (fabs(blipdistance - ping[j].radius) < 1.0){ // checks if distance between them is less than 1, also fabs doesn't allow negative numbers
+                    blips[i].pinged = *currentTime;
+                }
+            } // the job of the J for loop is to check if ping hit the blip
+            if ((*currentTime - blips[i].pinged) < 1.0){
+                printf("\033[%d;%dH%c", blips[i].y, blips[i].x, '@'); // prints strongest blip
+                printf("\033[%d;%dH%s", blips[i].y - 1, blips[i].x - 1, blips[i].name); // grabs a random name from the array of strings
             }
-        } // the job of the J for loop is to check if ping hit the blip
-        if (blips[i].active == 1 && (*currentTime - blips[i].pinged) < 1.0){
-            printf("\033[%d;%dH%c", blips[i].y, blips[i].x, '@'); // prints strongest blip
-            printf("\033[%d;%dH[%s]", blips[i].y - 1, blips[i].x - 1, blips[i].name); // grabs a random name from the array of strings
-        }
-        else if (blips[i].active == 1 && (*currentTime - blips[i].pinged) < 2.0){
-            printf("\033[%d;%dH%c", blips[i].y, blips[i].x, 'o'); // prints mid
-            printf("\033[%d;%dH[%s]", blips[i].y - 1, blips[i].x - 1, blips[i].name);
-        }
-        else if (blips[i].active == 1 && (*currentTime - blips[i].pinged) < 4.0){
-            printf("\033[%d;%dH%c", blips[i].y, blips[i].x, '.'); // prints weak
-            printf("\033[%d;%dH[%s]", blips[i].y - 1, blips[i].x - 1, blips[i].name); 
-        }
-        else{
-            printf("\033[%d;%dH%c", blips[i].y, blips[i].x, ' '); // prints no blip temporarily til ping hits again
-        }
-    }   
+            else if ((*currentTime - blips[i].pinged) < 2.0){
+                printf("\033[%d;%dH%c", blips[i].y, blips[i].x, 'o'); // prints mid
+                printf("\033[%d;%dH%s", blips[i].y - 1, blips[i].x - 1, blips[i].name);
+            }
+            else if ((*currentTime - blips[i].pinged) < 4.0){
+                printf("\033[%d;%dH%c", blips[i].y, blips[i].x, '.'); // prints weak
+                printf("\033[%d;%dH%s", blips[i].y - 1, blips[i].x - 1, blips[i].name);
+            }
+            else{
+                printf("\033[%d;%dH ", blips[i].y, blips[i].x); // prints no blip temporarily til ping hits again
+            }
+        }   
+    }
 }
 
 // Hi
