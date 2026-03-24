@@ -1,5 +1,5 @@
 # sonar-radar
-An ASCII animation of a (not exclusive) sonar radar for your terminal.
+A lightweight ASCII animation of a sonar radar for your terminal.
 The animation was made in C. If you don't want to run ./install.sh, you can use:
 
 `gcc sonarradar.c -o sonarradar -lm`
