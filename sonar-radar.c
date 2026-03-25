@@ -15,7 +15,7 @@ typedef struct{
     int x, y;
     int active;
     double spawnTime, pinged, spawnedAt; // timer and stopwatch
-    char name[15];
+    char name[22];
 } Blip;
 
 // prototypes
@@ -164,29 +164,48 @@ void drawPing(int centerX, int centerY, int pingCount, Ping *ping, struct winsiz
 }
 
 void checkBlip(struct winsize w, Blip *blips, double *currentTime) {
-    char *names[] = {"[SUB]", "[SHIP]", "[MINE]", "[UNK]", "[TGT]", "[JESUS?]", "[BOMB]", "[O_o]"};
-    for (int i = 0; i < MAX_BLIPS; i++){ // while it hasnt gone thru all elements of the array
-        if (blips[i].active == 0 && blips[i].spawnTime == 0){ // if blip wasnt active before
-            blips[i].spawnTime = *currentTime + (rand() % 11 + 5); // giving it a random cooldown between 5 and 15
-        }
-        if (*currentTime >= blips[i].spawnTime && blips[i].active == 0){
-            blips[i].active = 1; // activates a blip
-            blips[i].x = rand() % (w.ws_col - 4) + 5; // using x and y from the struct itself
-            blips[i].y = rand() % (w.ws_row - 4) + 5;
-            blips[i].pinged = 0; // makes pinged true
-            blips[i].spawnedAt = *currentTime; // starts the 15 second countdown before it disappears
-            strncpy(blips[i].name, names[rand() % 7], 8);
-        }
-        if (blips[i].active == 1 && (*currentTime - blips[i].spawnedAt) > 15.0) { // after 15 seconds theyll be gone
+    typedef struct { char *name; int weight; } BlipName;
+    BlipName nameTable[] = {
+        {"[SUB]", 10}, {"[SHIP]", 10}, {"[MINE]", 10},
+        {"[UNK]", 10}, {"[TGT]", 10}, {"[WRECK]", 10},
+        {"[WHALE]", 10}, {"[DIVER]", 8}, {"[SEAMOUNT]", 8},
+        {"[DECOY]", 8}, {"[BOMB]", 5}, {"[GHOST]", 5},
+        {"[TORPEDO]", 2}, {"[SOS]", 2},
+        {"[JESUS?]", 1}, {"[O_o]", 1}, {"[GARGANTUAN-LEVIATHAN]", 1}
+    };
+    int nameCount = sizeof(nameTable) / sizeof(nameTable[0]); // auto count names
+    int totalWeight = 0; // start at 0
+    for (int j = 0; j < nameCount; j++) totalWeight += nameTable[j].weight; // sum all weights
+    for (int i = 0; i < MAX_BLIPS; i++){
+        // if blip wasnt active before, give it a random cooldown between 5 and 15
+        if (blips[i].active == 0 && blips[i].spawnTime == 0)
+            blips[i].spawnTime = *currentTime + (rand() % 11 + 5);
+
+        // after 15 seconds theyll be gone
+        if (blips[i].active == 1 && (*currentTime - blips[i].spawnedAt) > 15.0){
             blips[i].active = 0;
             blips[i].pinged = 0;
             blips[i].spawnTime = 0;
             blips[i].spawnedAt = 0;
+            continue;
         }
 
+        // activates a blip
+        if (*currentTime < blips[i].spawnTime || blips[i].active == 1) continue;
+        blips[i].active = 1;
+        blips[i].x = rand() % (w.ws_col - 4) + 5; // using x and y from the struct itself
+        blips[i].y = rand() % (w.ws_row - 4) + 5;
+        blips[i].pinged = 0;
+        blips[i].spawnedAt = *currentTime; // starts the 15 second countdown
+
+        // roll a random name based on weight
+        int roll = rand() % totalWeight;
+        int cumulative = 0;
+        for (int j = 0; j < nameCount; j++){
+            cumulative += nameTable[j].weight;
+            if (roll < cumulative){ strncpy(blips[i].name, nameTable[j].name, 22); break; }
+        }
     }
-
-
 }
 
 void drawBlip(int centerX, int centerY, int pingCount, Ping *ping, struct winsize w, Blip *blips, double *currentTime){
