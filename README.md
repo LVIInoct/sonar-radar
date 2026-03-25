@@ -2,9 +2,11 @@
 A lightweight ASCII animation of a sonar radar for your terminal.
 The animation was made in C. If you don't want to run ./install.sh, you can use:
 
-`git clone https://github.com/LVIInoct/sonar-radar
-cd sonar-radar
-bash install.sh`
+`git clone https://github.com/LVIInoct/sonar-radar`
+
+`cd sonar-radar`
+
+`bash install.sh`
 
 Updates are half expected except for fixes.
 
