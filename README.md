@@ -9,6 +9,14 @@ The animation was made in C. If you don't want to run ./install.sh, you can use:
 
 `bash install.sh`
 
+The program includes:
+
+- Weighted changes for spawning names;
+
+- Cleaning leftovers on exit;
+
+- A lot of confusion and nestling in case you plan to edit it.
+
 Updates are half expected except for fixes.
 
 
