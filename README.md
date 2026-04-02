@@ -17,7 +17,6 @@ The program includes:
 
 - A lot of confusion and nestling in case you plan to edit it.
 
-Updates are half expected except for fixes.
 
 
 ![sonarradar](https://github.com/user-attachments/assets/d63af85b-8e35-4553-aa5d-5725dd9843e8)
