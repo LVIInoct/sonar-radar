@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-// keeping track of pings
+// radius to calculate ping
 typedef struct {
     float radius;
 } Ping;
