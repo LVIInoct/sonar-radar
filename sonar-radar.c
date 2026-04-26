@@ -239,4 +239,4 @@ void drawBlip(int centerX, int centerY, int pingCount, Ping *ping, struct winsiz
     }
 }
 
-// Hi
+// Hi guys
