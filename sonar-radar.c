@@ -57,6 +57,7 @@ int main() {
         struct timeval tv; // creates container to use gettimeofday
         gettimeofday(&tv, NULL); // takes current, individual time
         double currentTime = tv.tv_sec + tv.tv_usec / 1000000.0;
+        
         //calling functions in order
         // spawn logic
         checkPing(&lastSpawn, &pingCount, ping);
